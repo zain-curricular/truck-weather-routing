@@ -93,7 +93,7 @@ Requirements: Python 3.12, Node 22.12+ (Node 24 recommended).
 cd backend
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements-dev.txt
-cp .env.example .env           # then set TOMTOM_API_KEY (free key at developer.tomtom.com)
+cp .env.example .env           # then set TOMTOM_API_KEY (see below)
 .venv/bin/python manage.py runserver 8000
 
 # Frontend (second terminal)
@@ -102,6 +102,12 @@ npm ci
 cp .env.example .env           # VITE_API_BASE_URL=http://localhost:8000
 npm run dev                    # http://localhost:5173
 ```
+
+### TomTom API key
+
+1. Create a free account at [my.tomtom.com](https://my.tomtom.com).
+2. Under **Keys**, create a key with only **Routing API** and **Search API** ticked.
+3. Put it in `backend/.env` as `TOMTOM_API_KEY=...`. It is read by the backend only and never sent to the browser.
 
 ### Tests and checks
 
@@ -142,20 +148,21 @@ Field validation errors use DRF's per-field format.
 3. If Render assigns URLs other than `truck-routing-api.onrender.com` / `truck-routing-web.onrender.com`, update `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` and `VITE_API_BASE_URL`, then redeploy the static site so the new API URL is built in.
 4. Rate limiting is per client IP. Once deployed, check the `X-Forwarded-For` header Render passes to the API. Set `NUM_PROXIES` to the number of proxy entries after the client address, usually `1`. Without it, a client could vary that header to get around the limit.
 
-The free web service sleeps after a period of inactivity, and the first request can take up to a minute. The app shows a "waking the server" message while it waits.
+The free web service sleeps after a period of inactivity, and the first request can take up to a minute. The app shows a "still working" message while it waits.
 
 ## Known limitations
 
 - **Arrival times assume continuous driving.** Hours-of-service rest breaks are not modelled.
 - **No vehicle weight is sent to TomTom.** The assignment gives load weight, not gross vehicle weight, so weight-restricted roads are not avoided. Load weight is used in the risk rules as specified.
 - **Forecast accuracy** falls off with lead time. Departures are limited to the next 7 days.
+- **Long trips are slow to plan.** TomTom takes 12–35 s to return truck routes with five alternatives, so the backend waits up to 40 s. A coast-to-coast plan can take close to a minute in total.
 - **Free-tier limits:**
-  - TomTom allows 2,500 requests a day for routing and search combined.
+  - TomTom's free tier gives each API its own monthly request allowance; see [TomTom pricing](https://docs.tomtom.com/pricing).
   - Open-Meteo limits are counted per IP address, so a shared host such as Render may reach them sooner.
   - Responses are cached to stay within both. When weather is unavailable, routes are still shown and none is recommended.
 
 ## Data and licences
 
 - Weather: [Open-Meteo](https://open-meteo.com/), CC BY 4.0. The free API is for non-commercial use, which this assessment is; commercial use needs an Open-Meteo subscription.
-- Routing and geocoding: [TomTom](https://developer.tomtom.com/).
+- Routing and geocoding: [TomTom](https://docs.tomtom.com/).
 - Map tiles: [OpenFreeMap](https://openfreemap.org/), © [OpenMapTiles](https://openmaptiles.org/), © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
