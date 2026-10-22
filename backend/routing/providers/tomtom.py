@@ -12,6 +12,8 @@ ROUTING_URL = "https://api.tomtom.com/routing/1/calculateRoute/{locations}/json"
 SEARCH_URL = "https://api.tomtom.com/search/2/search/{query}.json"
 SERVICE = "TomTom"
 MAX_ALTERNATIVES = 5
+# Truck routes with five alternatives take TomTom 12-35 s; coast-to-coast trips are the slowest.
+ROUTING_TIMEOUT = (3.0, 40.0)
 
 
 @dataclass(frozen=True)
@@ -59,7 +61,12 @@ def calculate_routes(origin: LatLon, destination: LatLon, depart_at: str) -> lis
         "report": "effectiveSettings",
     }
     try:
-        body = get_json(ROUTING_URL.format(locations=locations), params, service=SERVICE)
+        body = get_json(
+            ROUTING_URL.format(locations=locations),
+            params,
+            service=SERVICE,
+            timeout=ROUTING_TIMEOUT,
+        )
     except ClientError as exc:
         raise _routing_client_error(exc) from None
 

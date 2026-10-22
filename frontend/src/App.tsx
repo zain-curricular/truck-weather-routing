@@ -102,7 +102,7 @@ export function App() {
           <p>Three truck routes, scored on forecast weather at the hour you reach each checkpoint.</p>
         </header>
         <TripForm busy={planning} hasPlan={plan !== null} onSubmit={submit} />
-        {slow && <p className="status">Waking the server; the first request after a quiet spell can take up to a minute…</p>}
+        {slow && <p className="status">Still working: long truck routes and a sleeping server can take up to a minute…</p>}
         {error && (
           <p className="error" role="alert">
             {error}

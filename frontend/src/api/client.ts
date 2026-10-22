@@ -2,7 +2,7 @@ import type { HeatmapResponse, LonLat, Place, PlanRequest, PlanResponse } from "
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
-// Render's free tier sleeps the API; the first request after idle can take ~30-60 s.
+// Long truck routes take TomTom over 30 s, and Render's free tier sleeps the API.
 export const SLOW_REQUEST_MS = 8000;
 
 export class ApiError extends Error {

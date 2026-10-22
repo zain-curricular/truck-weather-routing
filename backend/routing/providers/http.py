@@ -28,7 +28,7 @@ def get_json(
     timeout: tuple[float, float] = TIMEOUT,
     exact_decimals: bool = False,
 ) -> Any:
-    """GET with one retry on transient failures.
+    """GET with one retry on connection failures and transient statuses.
 
     `exact_decimals` parses JSON numbers as Decimal, for values compared against thresholds.
 
@@ -38,6 +38,12 @@ def get_json(
     for attempt in range(2):
         try:
             response = session.get(url, params=params, timeout=timeout)
+        except requests.ReadTimeout:
+            # The provider is still working on it; asking again would only double the wait.
+            logger.warning("%s did not answer within %s s", service, timeout[1])
+            raise UpstreamUnavailable(
+                f"{service} took too long to respond. Try again shortly."
+            ) from None
         except requests.RequestException as exc:
             logger.warning("%s request failed: %s", service, redact(str(exc)))
             response = None

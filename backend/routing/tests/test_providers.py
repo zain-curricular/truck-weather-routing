@@ -75,6 +75,7 @@ class TestCalculateRoutes:
         assert sent["maxAlternatives"] == ["5"]
         assert sent["departAt"] == ["2026-10-22T09:00:00-05:00"]
         assert "vehicleWeight" not in sent
+        assert responses.calls[0].request.req_kwargs["timeout"] == (3.0, 40.0)  # type: ignore[attr-defined]
 
     @responses.activate
     def test_border_restriction_missing_from_effective_settings_fails_closed(self):
@@ -134,6 +135,20 @@ class TestCalculateRoutes:
         assert KEY not in raised.value.message
         assert KEY not in caplog.text
         assert "key=[REDACTED]" in caplog.text
+
+    @responses.activate
+    def test_slow_response_is_not_retried(self, caplog):
+        error = requests.ReadTimeout(f"Read timed out: /x?key={KEY}&a=1")
+        responses.add(responses.GET, ROUTE_URL, body=error)
+        add_route_response(tomtom_body(tomtom_route(east_west(10))))
+
+        with caplog.at_level(logging.INFO), pytest.raises(UpstreamUnavailable) as raised:
+            tomtom.calculate_routes((0, 0), (0, 0.14), "now")
+
+        assert len(responses.calls) == 1
+        assert raised.value.message == "TomTom took too long to respond. Try again shortly."
+        assert raised.value.__cause__ is None
+        assert KEY not in caplog.text
 
     @responses.activate
     def test_transient_503_is_retried_and_then_succeeds(self):
