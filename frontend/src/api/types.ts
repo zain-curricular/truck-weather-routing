@@ -69,7 +69,8 @@ export interface PlanResponse {
 export interface PlanRequest {
   origin: Place;
   destination: Place;
-  departure_local: string;
+  /** Origin local time as YYYY-MM-DDTHH:MM; null leaves now. */
+  departure_local: string | null;
   load_weight_lb: number;
   interval_miles: 10 | 25 | 50;
 }

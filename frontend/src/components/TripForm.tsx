@@ -6,33 +6,27 @@ import { PlaceInput } from "./PlaceInput";
 
 interface Props {
   busy: boolean;
-  hasPlan: boolean;
+  /** Origin local departure of the plan on screen, as YYYY-MM-DDTHH:MM. */
+  planDeparture: string | null;
   onSubmit: (request: PlanRequest) => void;
 }
 
-function nextQuarterHour(): string {
-  const now = new Date(Date.now() + 15 * 60_000);
-  now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0);
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-}
-
-export function TripForm({ busy, hasPlan, onSubmit }: Props) {
+export function TripForm({ busy, planDeparture, onSubmit }: Props) {
   const [origin, setOrigin] = useState<Place | null>(null);
   const [destination, setDestination] = useState<Place | null>(null);
-  const [departureLocal, setDepartureLocal] = useState(nextQuarterHour);
+  const [departureLocal, setDepartureLocal] = useState("");
   const [loadWeight, setLoadWeight] = useState("35000");
   const [interval, setIntervalMiles] = useState<PlanRequest["interval_miles"]>(25);
   const [errors, setErrors] = useState<string[]>([]);
 
-  function submit(intervalMiles = interval) {
+  function submit(intervalMiles = interval, departure = departureLocal || null) {
     const problems = validateTrip({ origin, destination, departureLocal, loadWeight });
     setErrors(problems);
     if (problems.length || !origin || !destination) return;
     onSubmit({
       origin,
       destination,
-      departure_local: departureLocal,
+      departure_local: departure,
       load_weight_lb: Number(loadWeight),
       interval_miles: intervalMiles,
     });
@@ -55,9 +49,13 @@ export function TripForm({ busy, hasPlan, onSubmit }: Props) {
           <input
             id="departure"
             type="datetime-local"
+            aria-describedby="departure-hint"
             value={departureLocal}
             onChange={(event) => setDepartureLocal(event.target.value)}
           />
+          <span className="field-hint" id="departure-hint">
+            Leave empty to leave now.
+          </span>
         </div>
         <div className="field">
           <label htmlFor="load">Load weight (lb)</label>
@@ -88,7 +86,8 @@ export function TripForm({ busy, hasPlan, onSubmit }: Props) {
               disabled={busy}
               onClick={() => {
                 setIntervalMiles(miles);
-                if (hasPlan) submit(miles);
+                // Same departure as the plan on screen, so only the checkpoints change.
+                if (planDeparture) submit(miles, departureLocal || planDeparture);
               }}
             >
               {miles} mi

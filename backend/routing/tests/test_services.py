@@ -56,6 +56,14 @@ def tomtom_calls():
 
 
 class TestResolveDeparture:
+    def test_no_departure_means_now_in_whole_minutes_at_the_origin(self):
+        now = datetime(2026, 10, 22, 17, 7, 42, 500, tzinfo=UTC)
+
+        result = resolve_departure(None, "America/Chicago", now)
+
+        assert result.utc == datetime(2026, 10, 22, 17, 7, tzinfo=UTC)
+        assert result.local.isoformat() == "2026-10-22T12:07:00-05:00"
+
     def test_repeated_fall_back_hour_resolves_to_first_occurrence(self):
         now = datetime(2026, 10, 31, 12, 0, tzinfo=UTC)
 

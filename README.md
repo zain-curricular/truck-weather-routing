@@ -6,7 +6,7 @@ A React + Django app that helps a truck driver pick the safest of three routes. 
 
 ## What it does
 
-- Takes origin and destination (US addresses), departure date and time (origin local time), load weight in pounds, and a checkpoint interval of 10, 25 or 50 miles.
+- Takes origin and destination (US addresses), departure date and time (origin local time; empty means now), load weight in pounds, and a checkpoint interval of 10, 25 or 50 miles.
 - Requests truck routes from TomTom (up to five alternatives), drops near-duplicates and any route that leaves the United States, and keeps the three best distinct routes.
 - Places checkpoints along each route and estimates the arrival time at each one from TomTom's own per-point travel times.
 - Reads the Open-Meteo forecast for the hour the truck reaches each checkpoint, then classifies wind, rain and snow with the risk table and load rules.
@@ -62,6 +62,7 @@ The table leaves some cases open. They are resolved as follows:
 - **Forecast hour:** a checkpoint reads the forecast hour that contains its arrival. Open-Meteo's hourly precipitation covers the hour ending at each timestamp.
 - **Miles per checkpoint:** each checkpoint represents half the distance to each neighbour, so the miles add up exactly to the route length.
 - **Departure time** is entered in the origin's local time:
+  - Left empty, it means now at the origin, so the browser's own time zone never matters.
   - A time repeated when clocks fall back resolves to its first occurrence.
   - A time skipped when clocks spring forward is rejected.
   - Arrival times are shown in each checkpoint's own time zone.
@@ -129,7 +130,7 @@ CI runs the same checks on every push and pull request (`.github/workflows/ci.ym
 |---|---|---|---|
 | GET | `/api/health` | — | `{"status": "ok"}` |
 | GET | `/api/geocode` | `q` (3–100 chars) | `{"results": [{label, lat, lon}]}` |
-| POST | `/api/plan` | `origin {lat, lon}`, `destination {lat, lon}`, `departure_local` (`YYYY-MM-DDTHH:MM`), `load_weight_lb` (0–80,000), `interval_miles` (10, 25 or 50) | Departure, recommendation, warnings, and up to three ranked routes with summary, geometry, risk-coloured segments and checkpoints |
+| POST | `/api/plan` | `origin {lat, lon}`, `destination {lat, lon}`, `departure_local` (`YYYY-MM-DDTHH:MM`, or `null` for now), `load_weight_lb` (0–80,000), `interval_miles` (10, 25 or 50) | Departure, recommendation, warnings, and up to three ranked routes with summary, geometry, risk-coloured segments and checkpoints |
 | POST | `/api/heatmap` | `routes` (≤3 `[lon, lat]` lines from the plan's `corridor`), `departure_utc`, `load_weight_lb` | Cells and 49 hourly frames of risk levels and weather values |
 
 **Errors** return `{"detail": "..."}` with a readable message:

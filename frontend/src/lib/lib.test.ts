@@ -46,14 +46,15 @@ describe("validateTrip", () => {
     expect(
       validateTrip({ origin: place, destination: other, departureLocal: "2026-10-22T10:00", loadWeight: "35000" }),
     ).toEqual([]);
+    expect(validateTrip({ origin: place, destination: other, departureLocal: "", loadWeight: "35000" })).toEqual([]);
   });
 
   it("matches the server's rules for places and load weight", () => {
     expect(
-      validateTrip({ origin: null, destination: place, departureLocal: "", loadWeight: "80001" }),
+      validateTrip({ origin: null, destination: place, departureLocal: "2026-10-22T1", loadWeight: "80001" }),
     ).toEqual([
       "Choose an origin from the suggestions.",
-      "Enter a departure date and time.",
+      "Enter a full departure date and time, or clear it to leave now.",
       "Load weight must be a whole number of pounds from 0 to 80,000.",
     ]);
     expect(

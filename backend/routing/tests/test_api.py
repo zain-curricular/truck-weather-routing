@@ -38,8 +38,12 @@ def post(path, body):
 
 
 class TestPlanEndpoint:
+    @pytest.mark.parametrize(
+        ("departure_local", "resolved"),
+        [("2026-10-22T10:00", "2026-10-22T10:00-05:00"), (None, "2026-10-22T09:20-05:00")],
+    )
     @responses.activate
-    def test_plans_a_trip_end_to_end(self):
+    def test_plans_a_trip_end_to_end(self, departure_local, resolved):
         responses.add_callback(
             responses.GET,
             open_meteo.FORECAST_URL,
@@ -49,10 +53,11 @@ class TestPlanEndpoint:
             responses.GET, ROUTE_URL, json=tomtom_body(tomtom_route(east_west(100, lat=0.0)))
         )
 
-        response = post("/api/plan", plan_body())
+        response = post("/api/plan", plan_body(departure_local=departure_local))
 
         assert response.status_code == 200
         data = response.json()
+        assert data["departure"]["local"] == resolved
         assert data["recommendation"]["route_id"] == 0
         assert data["routes"][0]["checkpoints"][0]["timezone"] == "America/Chicago"
 
@@ -76,7 +81,9 @@ class TestPlanEndpoint:
         response = post("/api/plan", {})
 
         assert response.status_code == 400
-        assert set(response.json()) >= {"origin", "destination", "departure_local"}
+        errors = response.json()
+        assert set(errors) >= {"origin", "destination"}
+        assert "departure_local" not in errors
 
     def test_same_origin_and_destination_is_rejected(self):
         response = post("/api/plan", plan_body(destination={"lat": 0.0, "lon": 0.0}))

@@ -101,7 +101,11 @@ export function App() {
           <h1>Truck Weather Routing</h1>
           <p>Three truck routes, scored on forecast weather at the hour you reach each checkpoint.</p>
         </header>
-        <TripForm busy={planning} hasPlan={plan !== null} onSubmit={submit} />
+        <TripForm
+          busy={planning}
+          planDeparture={plan ? plan.departure.local.slice(0, 16) : null}
+          onSubmit={submit}
+        />
         {slow && <p className="status">Still working: long truck routes and a sleeping server can take up to a minute…</p>}
         {error && (
           <p className="error" role="alert">

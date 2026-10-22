@@ -47,7 +47,7 @@ LEVEL_NAMES = {
 class TripRequest:
     origin: LatLon
     destination: LatLon
-    departure_local: datetime
+    departure_local: datetime | None
     load_weight_lb: int
     interval_miles: int
 
@@ -59,13 +59,17 @@ class Departure:
     timezone: str
 
 
-def resolve_departure(departure_local: datetime, tz_name: str, now: datetime) -> Departure:
-    """Interpret a wall-clock time at the origin.
+def resolve_departure(departure_local: datetime | None, tz_name: str, now: datetime) -> Departure:
+    """Interpret a wall-clock time at the origin; None means leaving now.
 
     A time repeated when clocks go back resolves to its first occurrence (fold=0). A time
     skipped when clocks go forward does not survive a round trip through UTC and is rejected.
     """
     zone = ZoneInfo(tz_name)
+    if departure_local is None:
+        # Whole minutes, so a re-plan within the same minute reuses the cached routes.
+        utc = now.replace(second=0, microsecond=0)
+        return Departure(utc=utc, local=utc.astimezone(zone), timezone=tz_name)
     local = departure_local.replace(tzinfo=zone, fold=0)
     utc = local.astimezone(UTC)
     if utc.astimezone(zone).replace(tzinfo=None) != departure_local:

@@ -27,8 +27,8 @@ export function validateTrip(input: TripInput): string[] {
   ) {
     errors.push("Origin and destination must be different places.");
   }
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input.departureLocal)) {
-    errors.push("Enter a departure date and time.");
+  if (input.departureLocal && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input.departureLocal)) {
+    errors.push("Enter a full departure date and time, or clear it to leave now.");
   }
   const load = Number(input.loadWeight);
   if (input.loadWeight.trim() === "" || !Number.isInteger(load) || load < 0 || load > MAX_LOAD_LB) {

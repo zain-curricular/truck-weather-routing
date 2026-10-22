@@ -18,11 +18,13 @@ class PointSerializer(serializers.Serializer[dict[str, Any]]):
 class PlanRequestSerializer(serializers.Serializer[dict[str, Any]]):
     origin = PointSerializer()
     destination = PointSerializer()
-    departure_local = serializers.CharField(max_length=16)
+    departure_local = serializers.CharField(max_length=16, required=False, allow_null=True)
     load_weight_lb = serializers.IntegerField(min_value=0, max_value=MAX_LOAD_LB)
     interval_miles = serializers.ChoiceField(choices=[10, 25, 50])
 
-    def validate_departure_local(self, value: str) -> datetime:
+    def validate_departure_local(self, value: str | None) -> datetime | None:
+        if value is None:
+            return None
         try:
             return datetime.strptime(value, "%Y-%m-%dT%H:%M")
         except ValueError as exc:
@@ -39,7 +41,7 @@ class PlanRequestSerializer(serializers.Serializer[dict[str, Any]]):
         return TripRequest(
             origin=(data["origin"]["lat"], data["origin"]["lon"]),
             destination=(data["destination"]["lat"], data["destination"]["lon"]),
-            departure_local=data["departure_local"],
+            departure_local=data.get("departure_local"),
             load_weight_lb=data["load_weight_lb"],
             interval_miles=int(data["interval_miles"]),
         )
