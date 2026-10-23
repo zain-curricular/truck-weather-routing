@@ -75,10 +75,8 @@ CALM = {"wind": 5.0, "gust": 8.0, "rain": 0.0, "showers": 0.0, "snow": 0.0}
 
 
 def fake_open_meteo(weather_at, *, first_stamp: int, tz="America/Chicago"):
-    """A `responses` callback answering any batch of points with `weather_at(lat, lon, stamp)`.
-
-    `weather_at` returns a dict of overrides for wind/gust/rain/showers/snow.
-    """
+    """A `responses` callback answering any batch of points with `weather_at(lat, lon, stamp)`,
+    which returns overrides for wind/gust/rain/showers/snow."""
 
     def callback(request):
         params = parse_qs(urlparse(request.url).query)

@@ -41,10 +41,7 @@ def _key() -> str:
 
 
 def calculate_routes(origin: LatLon, destination: LatLon, depart_at: str) -> list[RouteCandidate]:
-    """Truck routes with alternatives, in TomTom's order (reference route first).
-
-    `depart_at` is an RFC 3339 time with offset, or "now".
-    """
+    """Truck routes with alternatives, reference route first; `depart_at` is RFC 3339 or "now"."""
     locations = f"{origin[0]},{origin[1]}:{destination[0]},{destination[1]}"
     params: dict[str, str | int | list[str]] = {
         "key": _key(),

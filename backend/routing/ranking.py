@@ -18,9 +18,8 @@ class RouteMetrics:
         return self.complete and self.no_travel_mi == 0
 
     def sort_key(self) -> tuple[bool, float, float, float, float, int]:
-        # A route with unknown weather cannot be compared on miles, so it ranks after every
-        # fully forecast route. Miles and average risk are compared at the precision shown
-        # to the user, so float noise never decides a tie.
+        # Unknown weather can't be compared on miles, so it ranks last. Values are compared at
+        # display precision so float noise never decides a tie.
         return (
             not self.complete,
             round(self.no_travel_mi, 2),

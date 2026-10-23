@@ -60,11 +60,8 @@ class Departure:
 
 
 def resolve_departure(departure_local: datetime | None, tz_name: str, now: datetime) -> Departure:
-    """Interpret a wall-clock time at the origin; None means leaving now.
-
-    A time repeated when clocks go back resolves to its first occurrence (fold=0). A time
-    skipped when clocks go forward does not survive a round trip through UTC and is rejected.
-    """
+    """Interpret a wall-clock time at the origin; None means leaving now. A repeated DST hour
+    takes its first occurrence; a skipped one fails the UTC round trip and is rejected."""
     zone = ZoneInfo(tz_name)
     if departure_local is None:
         # Whole minutes, so a re-plan within the same minute reuses the cached routes.
@@ -267,11 +264,8 @@ def _lon_lat(points: list[LatLon], digits: int) -> list[list[float]]:
 
 
 def _segments(route: _Route, display: list[LatLon]) -> list[dict[str, Any]]:
-    """Pieces of the display line coloured by the checkpoint whose miles they belong to.
-
-    Checkpoint boundaries are measured on the full route and scaled onto the simplified
-    display line, which is a few metres shorter.
-    """
+    """Display-line pieces coloured by their checkpoint; boundaries are measured on the full
+    route and scaled onto the slightly shorter simplified line."""
     cumulative = geometry.cumulative_mi(display)
     scale = cumulative[-1] / route.cumulative[-1] if route.cumulative[-1] else 0.0
     cps = route.checkpoints

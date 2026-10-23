@@ -138,11 +138,8 @@ DEDUPE_TOLERANCE_MI = 0.25
 
 
 def distinct_routes(candidates: Sequence[Sequence[LatLon]]) -> list[int]:
-    """Indices of candidates kept, in input order.
-
-    A candidate is a duplicate when at least 90% of its 0.5-mile samples lie within 0.25 mi
-    of a single route already kept.
-    """
+    """Indices of candidates kept, in input order; a duplicate has at least 90% of its samples
+    within tolerance of one kept route."""
     kept: list[int] = []
     indexes: list[SegmentIndex] = []
     for i, route in enumerate(candidates):
@@ -166,11 +163,8 @@ def distinct_routes(candidates: Sequence[Sequence[LatLon]]) -> list[int]:
 
 
 def simplify(points: Sequence[LatLon], tolerance_mi: float) -> list[LatLon]:
-    """Douglas-Peucker, iterative; endpoints are always kept.
-
-    Points are projected once with each point's own longitude scale, which is accurate
-    between neighbouring points and keeps the inner loop free of trigonometry.
-    """
+    """Iterative Douglas-Peucker keeping both endpoints; a per-point longitude scale is accurate
+    between neighbours and keeps trigonometry out of the inner loop."""
     if len(points) < 3:
         return list(points)
     ys = [lat * MI_PER_DEG_LAT for lat, _ in points]
@@ -209,13 +203,8 @@ CORRIDOR_SPACINGS_DEG = (0.1, 0.25, 0.5, 1.0)
 def corridor_cells(
     routes: Sequence[Sequence[LatLon]], buffer_mi: float, max_cells: int
 ) -> tuple[float, list[LatLon]]:
-    """Lattice points near any route, at the finest spacing that stays within `max_cells`.
-
-    The lattice is snapped to multiples of the spacing so overlapping trips reuse the same
-    points, which keeps the weather cache warm. The buffer grows with coarse spacings so a
-    route running between lattice points is never left uncovered, and the coarsest spacing
-    is returned whole even above the cap rather than cutting coverage short.
-    """
+    """Lattice points near any route at the finest spacing within `max_cells` (the coarsest is
+    never truncated). Snapped so trips share cached points; the buffer grows with spacing."""
     simplified = [simplify(r, 0.05) for r in routes]
     indexes = [SegmentIndex(r, cell_deg=0.5) for r in simplified]
     cells: list[LatLon] = []

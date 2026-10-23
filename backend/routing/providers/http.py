@@ -28,12 +28,8 @@ def get_json(
     timeout: tuple[float, float] = TIMEOUT,
     exact_decimals: bool = False,
 ) -> Any:
-    """GET with one retry on connection failures and transient statuses.
-
-    `exact_decimals` parses JSON numbers as Decimal, for values compared against thresholds.
-
-    Raised messages never include the request URL, because TomTom's key travels in it.
-    """
+    """GET with one retry on connection failures and transient statuses; `exact_decimals` reads
+    numbers as Decimal. Raised messages omit the URL, which carries TomTom's key."""
     response = None
     for attempt in range(2):
         try:

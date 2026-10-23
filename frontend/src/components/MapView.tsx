@@ -225,10 +225,7 @@ function addLayers(map: MapLibreMap) {
 
 const HEATMAP_LEVEL: ExpressionSpecification = ["to-number", ["coalesce", ["feature-state", "level"], -1]];
 
-/**
- * Shows one forecast hour by updating per-cell feature state. The paint expression never
- * changes, so MapLibre recolours the existing buffers instead of rebuilding the layer.
- */
+/** Per-cell feature state lets MapLibre recolour existing buffers instead of rebuilding the layer. */
 function paintHour(map: MapLibreMap, heatmap: HeatmapResponse, hour: number) {
   const levels = heatmap.frames[hour]?.levels ?? [];
   levels.forEach((level, id) => map.setFeatureState({ source: "heatmap", id }, { level }));

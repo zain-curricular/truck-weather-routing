@@ -54,10 +54,7 @@ def _rounded(point: LatLon) -> LatLon:
 
 def forecasts(points: Sequence[LatLon], *, now: datetime, until: datetime) -> list[Forecast]:
     """Hourly forecasts from the hour before `now` through `until`, one per point, in order.
-
-    Open-Meteo's `past_hours`/`forecast_hours` count from the current UTC hour, so every
-    location shares the same stamps and a series cached this hour stays aligned.
-    """
+    Hours count from the current UTC hour, so every point and cached series shares stamps."""
     first_stamp = hour_floor(now)
     last_stamp = hour_ceil(until)
     hours = min(MAX_FORECAST_HOURS, (last_stamp - first_stamp) // 3600 + 1)

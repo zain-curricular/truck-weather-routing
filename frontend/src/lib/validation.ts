@@ -10,11 +10,7 @@ export interface TripInput {
   loadWeight: string;
 }
 
-/**
- * Mirrors the server's checks so mistakes show before a round trip. The server stays
- * authoritative: the departure window and time zone are only checked there, against the
- * origin's local time.
- */
+/** Mirrors server checks for fast feedback; the departure window and time zone are server-only. */
 export function validateTrip(input: TripInput): string[] {
   const errors: string[] = [];
   if (!input.origin) errors.push("Choose an origin from the suggestions.");
