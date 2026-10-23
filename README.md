@@ -2,7 +2,7 @@
 
 A React + Django app that helps a truck driver pick the safest of three routes. Weather is sampled along each route at the hour the truck is expected to reach each checkpoint. Each checkpoint is scored with the assignment's risk and load rules, and the routes are ranked by Severe miles, High miles, average risk and travel time.
 
-**Live app:** _added after deployment_
+**Live app:** https://truck-weather-routing-lake.vercel.app (API: https://truck-weather-routing-api.vercel.app)
 
 ## What it does
 
