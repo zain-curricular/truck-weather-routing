@@ -20,6 +20,9 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# Vercel CLI project link
+.vercel/
+
 # Editors and OS
 .DS_Store
 .idea/

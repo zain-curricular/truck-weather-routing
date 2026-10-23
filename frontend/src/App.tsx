@@ -106,7 +106,7 @@ export function App() {
           planDeparture={plan ? plan.departure.local.slice(0, 16) : null}
           onSubmit={submit}
         />
-        {slow && <p className="status">Still working: long truck routes and a sleeping server can take up to a minute…</p>}
+        {slow && <p className="status">Still working: long truck routes can take up to a minute…</p>}
         {error && (
           <p className="error" role="alert">
             {error}

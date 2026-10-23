@@ -140,16 +140,24 @@ CI runs the same checks on every push and pull request (`.github/workflows/ci.ym
 
 Field validation errors use DRF's per-field format.
 
-## Deployment (Render)
+## Deployment (Vercel)
 
-`render.yaml` defines both services: the Django API as a Python web service and the React app as a static site.
+Both parts run on Vercel's free Hobby plan as two projects from this repository: `backend/` as a Django app (detected from `manage.py`, served as one Python function) and `frontend/` as a Vite static site.
 
-1. In Render, create a Blueprint from this repository.
-2. When prompted, enter `TOMTOM_API_KEY`. Leave `NUM_PROXIES` empty for now.
-3. If Render assigns URLs other than `truck-routing-api.onrender.com` / `truck-routing-web.onrender.com`, update `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS` and `VITE_API_BASE_URL`, then redeploy the static site so the new API URL is built in.
-4. Rate limiting is per client IP. Once deployed, check the `X-Forwarded-For` header Render passes to the API. Set `NUM_PROXIES` to the number of proxy entries after the client address, usually `1`. Without it, a client could vary that header to get around the limit.
+| Project | Root directory | Production environment variables |
+|---|---|---|
+| API | `backend` | `DJANGO_DEBUG=false`, `DJANGO_SECRET_KEY`, `TOMTOM_API_KEY`, `DJANGO_ALLOWED_HOSTS=<api domain>`, `CORS_ALLOWED_ORIGINS=https://<web domain>`, `NUM_PROXIES=1` |
+| Web | `frontend` | `VITE_API_BASE_URL=https://<api domain>` |
 
-The free web service sleeps after a period of inactivity, and the first request can take up to a minute. The app shows a "still working" message while it waits.
+```bash
+cd backend && vercel link && vercel deploy --prod
+cd ../frontend && vercel link && vercel deploy --prod
+```
+
+- `backend/vercel.json` selects the Django preset and allows a request up to 120 s for long truck routes.
+- `.vercelignore` keeps `.env` and local tooling out of the upload. The development-only `pyproject.toml` is left out too, so Vercel installs from `requirements.txt`.
+- Vercel replaces `X-Forwarded-For` with the client address, so `NUM_PROXIES=1` makes the rate limit per client.
+- `VITE_API_BASE_URL` is read at build time, so redeploy the web project after changing it.
 
 ## Known limitations
 
@@ -159,8 +167,9 @@ The free web service sleeps after a period of inactivity, and the first request 
 - **Long trips are slow to plan.** TomTom takes 12–35 s to return truck routes with five alternatives, so the backend waits up to 40 s. A coast-to-coast plan can take close to a minute in total.
 - **Free-tier limits:**
   - TomTom's free tier gives each API its own monthly request allowance; see [TomTom pricing](https://docs.tomtom.com/pricing).
-  - Open-Meteo limits are counted per IP address, so a shared host such as Render may reach them sooner.
+  - Open-Meteo limits are counted per IP address, so a shared host such as Vercel may reach them sooner.
   - Responses are cached to stay within both. When weather is unavailable, routes are still shown and none is recommended.
+- **Caches and rate limits live in each function instance's memory.** On Vercel, separate instances do not share them, so caching is less effective and the rate limit is per instance. A shared store such as Redis would fix both.
 
 ## Data and licences
 

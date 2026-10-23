@@ -63,8 +63,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 0 if DEBUG else 86400
 CSRF_COOKIE_SECURE = not DEBUG
 SILENCED_SYSTEM_CHECKS = [
-    # Render redirects HTTP to HTTPS at its edge; redirecting here too would also bounce its
-    # plain-HTTP health checks.
+    # The hosting edge redirects HTTP to HTTPS before requests reach Django.
     "security.W008",
     # Served from a platform subdomain: subdomain and preload HSTS policy belong to the
     # domain owner, not this app.

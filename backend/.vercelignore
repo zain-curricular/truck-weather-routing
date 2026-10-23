@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+.coverage
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+pyproject.toml
+requirements-dev.txt
